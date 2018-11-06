@@ -27,8 +27,8 @@ if (!isFirstCall) {              \
 class MotionController 
 {
 public:
-    const float pwmMin = 255;
-    const float pwmMax = 250;
+    const float pwmMin = -200;
+    const float pwmMax = 200;
 
     const long minAngle = -200;
     const long maxAngle = 200;
@@ -48,7 +48,7 @@ public:
         WAIT_ON_CALL()
         
         const long throttle = valueMapper(
-            msg->axes[1], -1.0, 1.0, -255, 255 
+            msg->axes[1], -1.0, 1.0, pwmMin, pwmMax 
         );
 
         const long steering = valueMapper(

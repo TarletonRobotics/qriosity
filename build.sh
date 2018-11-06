@@ -39,10 +39,6 @@ for i in `ls /dev | grep ttyACM`; do
 	fi
 done;
 
-bash ./run.sh &
-sleep 2
-pkill -P $$
-
 
 success "Building haywyre control node"
 
@@ -55,10 +51,6 @@ if [ $? -eq 0 ]; then
 else
     error "Failed to build control node."
 fi
-
-bash ./run.sh &
-sleep 2
-pkill -P $$
 
 
 

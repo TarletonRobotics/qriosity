@@ -38,41 +38,114 @@ void motorControlCb( const std_msgs::String& msg) {
 
   char buf[idx];
 
-  steering = atoi((char*)&msg.data[idx+1]);
+  steering = atoi((char*)&msg.data[idx-2]);
   memcpy(buf, msg.data, idx);
   pwm = atoi(buf);
 
+  String msgString = String(msg.data);
+  idx = msgString.indexOf(':');
+  pwm = atoi(msgString.substring(0,idx-1).c_str());
+  steering = atoi(msgString.substring(idx+1).c_str());
+
   if (steering == 0) {
-    if (pwm > 0) {
-      digitalWrite(2, LOW);
-      digitalWrite(3, HIGH);
+    if (pwm < 0) {
+      // motor 1
+      digitalWrite(22, HIGH); // input 1 
+      digitalWrite(23, LOW); // input 2
+      // motor 2
+      digitalWrite(24, LOW); // input 1
+      digitalWrite(25, HIGH); // input 2
+       
+      // motor 3
+      digitalWrite(26, LOW); // input 1
+      digitalWrite(27, HIGH); // input 2
+      // motor 4
+      digitalWrite(28, HIGH); // input 1
+      digitalWrite(29, LOW); // input 2
+    
+      pwm = abs(pwm);
+      analogWrite(2, pwm);
+      analogWrite(3, pwm);
+      analogWrite(4, pwm);
+      analogWrite(5, pwm);    
     } else {
-      digitalWrite(2, HIGH);
-      digitalWrite(3, LOW);
+   // motor 1
+      digitalWrite(22, LOW); // input 1 
+      digitalWrite(23, HIGH); // input 2
+      
+      // motor 2
+      digitalWrite(24, HIGH); // input 1
+      digitalWrite(25, LOW); // input 2
+       
+      // motor 3
+      digitalWrite(26, HIGH); // input 1
+      digitalWrite(27, LOW); // input 2
+      // motor 4
+      digitalWrite(28, LOW); // input 1
+      digitalWrite(29, HIGH); // input 2   
+  
+
+      pwm = abs(pwm);
+      analogWrite(2, pwm);
+      analogWrite(3, pwm);
+      analogWrite(4, pwm);
+      analogWrite(5, pwm);  
     }
-
-    analogWrite(4, abs(pwm));
-    analogWrite(5, abs(pwm));
   } else if (steering < 0) {
-    digitalWrite(2, LOW);
-    digitalWrite(3, LOW);
+    // motor 1
+    digitalWrite(22, LOW); // input 1 
+    digitalWrite(23, HIGH); // input 2
+    // motor 2
+    digitalWrite(24, LOW); // input 1
+    digitalWrite(25, HIGH); // input 2
+     
+    // motor 3
+    digitalWrite(26, LOW); // input 1
+    digitalWrite(27, HIGH); // input 2
+    // motor 4
+    digitalWrite(28, LOW); // input 1
+    digitalWrite(29, HIGH); // input 2
 
-    analogWrite(4, abs(pwm));
-    analogWrite(5, abs(pwm));
+    pwm = abs(pwm);
+    analogWrite(2, pwm);
+    analogWrite(3, pwm);
+    analogWrite(4, pwm);
+    analogWrite(5, pwm);
+
   } else {
-    digitalWrite(2, HIGH);
-    digitalWrite(3, HIGH);
+    // motor 1
+    digitalWrite(22, HIGH); // input 1 
+    digitalWrite(23, LOW); // input 2
+    // motor 2
+    digitalWrite(24, HIGH); // input 1
+    digitalWrite(25, LOW); // input 2
+     
+    // motor 3
+    digitalWrite(26, HIGH); // input 1
+    digitalWrite(27, LOW); // input 2
+    // motor 4
+    digitalWrite(28, HIGH); // input 1
+    digitalWrite(29, LOW); // input 2
 
-    analogWrite(4, abs(pwm));
-    analogWrite(5, abs(pwm));  
+    pwm = abs(pwm);
+    analogWrite(2, pwm);
+    analogWrite(3, pwm);
+    analogWrite(4, pwm);
+    analogWrite(5, pwm);
   }
 }
 
 ros::Subscriber<std_msgs::String> motorSubscriber("motor_control", &motorControlCb );
 
 void setup() {   
-  pinMode(2, OUTPUT);
-  pinMode(3, OUTPUT);
+  pinMode(22, OUTPUT);
+  pinMode(23, OUTPUT);
+  pinMode(24, OUTPUT);
+  pinMode(25, OUTPUT);
+  pinMode(26, OUTPUT);
+  pinMode(27, OUTPUT);
+  pinMode(28, OUTPUT);
+  pinMode(29, OUTPUT);
   
   nh.initNode();
 
