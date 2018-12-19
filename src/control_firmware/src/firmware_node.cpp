@@ -3,8 +3,8 @@
 #include <std_msgs/Float32MultiArray.h>
 #include <EEPROM.h>
 #include <string.h>
-#include <SCServo.h>
-#include <ArduinoJson.h>
+//#include <SCServo.h>
+//#include <ArduinoJson.h>
 #include <SoftwareSerial.h>
 
 
@@ -36,15 +36,9 @@ void motorControlCb( const std_msgs::String& msg) {
   int steering = 0;
   uint8_t idx = len - 2;
 
-  char buf[idx];
-
-  steering = atoi((char*)&msg.data[idx-2]);
-  memcpy(buf, msg.data, idx);
-  pwm = atoi(buf);
-
   String msgString = String(msg.data);
   idx = msgString.indexOf(':');
-  pwm = atoi(msgString.substring(0,idx-1).c_str());
+  pwm = atoi(msgString.substring(0,idx).c_str());
   steering = atoi(msgString.substring(idx+1).c_str());
 
   if (steering == 0) {
@@ -53,8 +47,8 @@ void motorControlCb( const std_msgs::String& msg) {
       digitalWrite(22, HIGH); // input 1 
       digitalWrite(23, LOW); // input 2
       // motor 2
-      digitalWrite(24, LOW); // input 1
-      digitalWrite(25, HIGH); // input 2
+      digitalWrite(24, HIGH); // input 1
+      digitalWrite(25, LOW); // input 2
        
       // motor 3
       digitalWrite(26, LOW); // input 1
@@ -74,8 +68,8 @@ void motorControlCb( const std_msgs::String& msg) {
       digitalWrite(23, HIGH); // input 2
       
       // motor 2
-      digitalWrite(24, HIGH); // input 1
-      digitalWrite(25, LOW); // input 2
+      digitalWrite(24, LOW); // input 1
+      digitalWrite(25, HIGH); // input 2
        
       // motor 3
       digitalWrite(26, HIGH); // input 1
@@ -92,19 +86,19 @@ void motorControlCb( const std_msgs::String& msg) {
       analogWrite(5, pwm);  
     }
   } else if (steering < 0) {
-    // motor 1
+   // motor 1
     digitalWrite(22, LOW); // input 1 
-    digitalWrite(23, HIGH); // input 2
+    digitalWrite(23, LOW); // input 2
     // motor 2
-    digitalWrite(24, LOW); // input 1
-    digitalWrite(25, HIGH); // input 2
+    digitalWrite(24, HIGH); // input 1
+    digitalWrite(25, LOW); // input 2
      
     // motor 3
-    digitalWrite(26, LOW); // input 1
+    digitalWrite(26, HIGH); // input 1
     digitalWrite(27, HIGH); // input 2
     // motor 4
-    digitalWrite(28, LOW); // input 1
-    digitalWrite(29, HIGH); // input 2
+    digitalWrite(28, HIGH); // input 1
+    digitalWrite(29, LOW); // input 2
 
     pwm = abs(pwm);
     analogWrite(2, pwm);
@@ -114,18 +108,20 @@ void motorControlCb( const std_msgs::String& msg) {
 
   } else {
     // motor 1
-    digitalWrite(22, HIGH); // input 1 
-    digitalWrite(23, LOW); // input 2
+    digitalWrite(22, LOW); // input 1 
+    digitalWrite(23, HIGH); // input 2
+    
     // motor 2
     digitalWrite(24, HIGH); // input 1
     digitalWrite(25, LOW); // input 2
      
     // motor 3
-    digitalWrite(26, HIGH); // input 1
-    digitalWrite(27, LOW); // input 2
+    digitalWrite(26, LOW); // input 1
+    digitalWrite(27, HIGH); // input 2
     // motor 4
-    digitalWrite(28, HIGH); // input 1
-    digitalWrite(29, LOW); // input 2
+    digitalWrite(28, LOW); // input 1
+    digitalWrite(29, HIGH); // input 2   
+
 
     pwm = abs(pwm);
     analogWrite(2, pwm);
@@ -154,6 +150,7 @@ void setup() {
   pwm  = 0;
   nh.subscribe(motorSubscriber);
   pwm  = 0;
+
 }
 
 void loop() {  
