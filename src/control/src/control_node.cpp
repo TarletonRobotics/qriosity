@@ -27,17 +27,19 @@ if (!isFirstCall) {              \
 class MotionController 
 {
 public:
-    const float pwmMin = -200;
-    const float pwmMax = 200;
+    const float pwmMin = -255;
+    const float pwmMax = 255;
 
     const long minAngle = -200;
     const long maxAngle = 200;
 
     std_msgs::String motorCommand;
+    std_msgs::String steeringCommand;
    
     ros::Subscriber joystickSubscriber;
     
     ros::Publisher motorControlPublisher;
+    ros::Publisher steeringControlPublisher;
     
 
     float valueMapper(const float x, float imin, float imax, float omin, float omax) {
@@ -51,13 +53,13 @@ public:
             msg->axes[1], -1.0, 1.0, pwmMin, pwmMax 
         );
 
-        const long steering = valueMapper(
-            msg->axes[2], -1.0, 1.0, -1, 1
+        const float steering = valueMapper(
+            msg->axes[2], -1.0f, 1.0f, -1, 1
         );        
 
-        motorCommand.data = std::to_string(throttle) + ":" + std::to_string(steering);
-        
-        ROS_INFO("Throttle: %s\n", motorCommand.data.c_str());
+        motorCommand.data = std::to_string(throttle) + ":" + std::to_string(0);
+        steeringCommand.data = std::to_string(steering);
+        ROS_INFO("Throttle: %s Steering: %s\n", motorCommand.data.c_str(), steeringCommand.data.c_str());
     }
 
     MotionController(ros::NodeHandle& handle) {
@@ -67,10 +69,12 @@ public:
 
         // publisher for motor pwm values.
         motorControlPublisher = handle.advertise<std_msgs::String>("motor_control", 1000);
+        steeringControlPublisher = handle.advertise<std_msgs::String>("steering_control", 1000);
     }
 
     void publish() {
         motorControlPublisher.publish(motorCommand);
+        steeringControlPublisher.publish(steeringCommand);
     };
 
     MotionController(MotionController&&) = default;   
