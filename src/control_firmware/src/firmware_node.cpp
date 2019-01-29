@@ -81,9 +81,7 @@ void motorControlCb( const std_msgs::String& msg) {
     digitalWrite(MDIG2, HIGH);
   } else {
     digitalWrite(MDIG1, LOW);
-    digitalWrite(MDIG1, LOW);
     digitalWrite(MDIG2, LOW);
-    digitalWrite(MDIG2, LOW);  
   }
 
   pwm = abs(pwm);
