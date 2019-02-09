@@ -57,7 +57,7 @@ public:
             msg->axes[2], -1.0f, 1.0f, -1, 1
         );        
 
-        motorCommand.data = std::to_string(throttle) + ":" + std::to_string(0);
+        motorCommand.data = std::to_string(throttle);
         steeringCommand.data = std::to_string(steering);
         ROS_INFO("Throttle: %s Steering: %s\n", motorCommand.data.c_str(), steeringCommand.data.c_str());
     }
