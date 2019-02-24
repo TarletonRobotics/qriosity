@@ -17,6 +17,10 @@ if (!isFirstCall) {              \
 }                                \
 
 int pwm = 0;
+int destination = 0;
+int difference = 0;
+int currentPosition = 0;
+int precision = 2;
 
 const int SDIG1 = 2; // Arduino pin 4 is connected to MDDS10 pin DIG1.
 const int SDIG2 = 3; // Arduino pin 7 is connected to MDDS10 pin DIG2.
@@ -38,35 +42,96 @@ T mapValue(const T x, T imin, T imax, T omin, T omax) {
     return (x - imin) * ((omax - omin) / (imax - imin)) + omin; 
 };
 
-void steeringControlCb(const std_msgs::String& msg) {
-  float pos = atof(msg.data);
-  
-  if (pos < 0) {
-    digitalWrite(SDIG1, LOW);
-    digitalWrite(SDIG2, HIGH);
-    //digitalWrite(SDIG1, HIGH);
-    //digitalWrite(SDIG2, LOW);
-    
-    analogWrite(SAN1, 255);
-    analogWrite(SAN2, 255);
-    
-  } else if (pos > 0) {
-    digitalWrite(SDIG1, HIGH);
-    digitalWrite(SDIG2, LOW);
-    //digitalWrite(SDIG1, LOW);
-    //digitalWrite(SDIG2, HIGH);
-    
-    analogWrite(SAN1, 255);
-    analogWrite(SAN2, 255);
-  
-  } else {
-    digitalWrite(SDIG1, LOW);
-    digitalWrite(SDIG2, LOW);
+////=================== STEERING CODE ============================= ///////
 
-    analogWrite(SAN1, 0);
-    analogWrite(SAN2, 0);
+void stopActuator()
+{
+  analogWrite(SAN1,0);
+  analogWrite(SAN2,0);
+}//end stopActuator
+
+void pushActuator()
+{ 
+  analogWrite(SAN1,255);
+  analogWrite(SAN2,255);
+}//end pushActuator
+
+void pullActuator()
+{
+  analogWrite(SAN1,255);
+  analogWrite(SAN2,255);
+}//end pullActuator
+
+void pushActuatorUntilStop(int destination)
+{
+  digitalWrite(SDIG1, HIGH);
+  digitalWrite(SDIG2, HIGH);
+  
+  int temp = analogRead(A0); 
+  difference = destination - temp;//check difference to see if continue moving, or stop
+
+  while (difference > precision || difference < -precision)
+  {
+    destination = analogRead(A0);
+    temp = analogRead(A0); //continue checking difference
+    difference = destination - temp;
+    pushActuator();
+  }//end while
+  
+  delay(75);
+  stopActuator();
+}//end pushActuatorUntilStop
+
+void pullActuatorUntilStop(int destination)
+{
+  digitalWrite(SDIG1, LOW);
+  digitalWrite(SDIG2, LOW);
+  
+  int temp = analogRead(A0); //check difference to see if continue moving, or stop
+  difference = destination - temp;
+
+  while (difference > precision || difference < -precision)
+  {
+    destination = analogRead(A0);
+    temp = analogRead(A0); //continue checking difference
+    difference = destination - temp;
+    pullActuator();
+  }//end while
+  
+  delay(75);
+  stopActuator();
+}//end pullActuatorUntilStop
+
+void steer(int destination) {
+  //destination = 500; 
+  currentPosition = analogRead(A0);//check where you are
+  
+  //Serial.print("Position    ");
+  
+  //Serial.println(analogRead(A0));
+  
+  difference = destination - currentPosition;//find out how far you are from the destination
+  
+  if (currentPosition > destination) { 
+    pullActuatorUntilStop(destination);
+    //Serial.println("pulling actuator");
+  }// choose what action to take
+  else if (currentPosition < destination) { 
+    pushActuatorUntilStop(destination);
+    //Serial.println("pushing actuator");
   }
+  else if (difference < precision && difference > -precision) stopActuator();
 }
+
+
+void steeringControlCb(const std_msgs::String& msg) {
+  destination = mapValue(int(atof(msg.data)), -1, 1, 400, 600);
+  steer(destination);
+}
+
+
+////=================== END STEERING CODE ============================= ///////
+
 
 void motorControlCb( const std_msgs::String& msg) {
   WAIT_ON_CALL()
@@ -116,7 +181,6 @@ void loop() {
   delay(10);
   pwm = 0;
 }
-
 
 
 
