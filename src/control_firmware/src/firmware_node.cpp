@@ -20,17 +20,16 @@ int pwm = 0;
 int destination = 0;
 int difference = 0;
 int currentPosition = 0;
-int precision = 2;
+int precision = 5;
+int startMillis = 0;
 
-const int SDIG1 = 2; // Arduino pin 4 is connected to MDDS10 pin DIG1.
-const int SDIG2 = 3; // Arduino pin 7 is connected to MDDS10 pin DIG2.
-const int SAN1 = 4; // Arduino pin 5 is connected to MDDS10 pin AN1.
-const int SAN2 = 5; // Arduino pin 6 is connected to MDDS10 pin AN2.
+const int SDIG1 = 8; // Arduino pin 4 is connected to MDDS10 pin DIG1
+const int SDIG2 = 4; // Arduino pin 7 is connected to MDDS10 pin DIG2.
+const int SAN1 = 6; // Arduino pin 5 is connected to MDDS10 pin AN1.
+const int SAN2 = 2; // Arduino pin 6 is connected to MDDS10 pin AN2.
 
-const int MDIG1 = 12; // Arduino pin 4 is connected to MDDS10 pin DIG1.
-const int MDIG2 = 9; // Arduino pin 7 is connected to MDDS10 pin DIG2.
-const int MAN1 = 10; // Arduino pin 5 is connected to MDDS10 pin AN1.
-const int MAN2 = 11; // Arduino pin 6 is connected to MDDS10 pin AN2.
+const int MAN1 = 3; // Arduino pin 4 is connected to MDDS10 pin DIG1.
+const int MAN2 = 5; // Arduino pin 7 is connected to MDDS10 pin DIG2.
 
 void motorControlCb( const std_msgs::String&);
 void steeringControlCb(const std_msgs::String&);
@@ -52,8 +51,8 @@ void stopActuator()
 
 void pushActuator()
 { 
-  analogWrite(SAN1,255);
-  analogWrite(SAN2,255);
+  analogWrite(SAN1, 255);
+  analogWrite(SAN2, 255);
 }//end pushActuator
 
 void pullActuator()
@@ -65,7 +64,7 @@ void pullActuator()
 void pushActuatorUntilStop(int destination)
 {
   digitalWrite(SDIG1, HIGH);
-  digitalWrite(SDIG2, HIGH);
+  digitalWrite(SDIG2, LOW);
   
   int temp = analogRead(A0); 
   difference = destination - temp;//check difference to see if continue moving, or stop
@@ -85,7 +84,7 @@ void pushActuatorUntilStop(int destination)
 void pullActuatorUntilStop(int destination)
 {
   digitalWrite(SDIG1, LOW);
-  digitalWrite(SDIG2, LOW);
+  digitalWrite(SDIG2, HIGH);
   
   int temp = analogRead(A0); //check difference to see if continue moving, or stop
   difference = destination - temp;
@@ -102,9 +101,9 @@ void pullActuatorUntilStop(int destination)
   stopActuator();
 }//end pullActuatorUntilStop
 
-void steer(int destination) {
+void continousSteering(int destination) {
   //destination = 500; 
-  currentPosition = analogRead(A0);//check where you are
+  currentPosition = (analogRead(A0) + analogRead(A2)) / 2.0;//check where you are
   
   //Serial.print("Position    ");
   
@@ -125,8 +124,30 @@ void steer(int destination) {
 
 
 void steeringControlCb(const std_msgs::String& msg) {
-  destination = mapValue(int(atof(msg.data)), -1, 1, 400, 600);
-  steer(destination);
+  //destination = mapValue(float(atof(msg.data)), -1.0f, 1.0f, (400.0f+330.0f)/2.0f, (630.0f+700.0f)/2.0f);
+  //continousSteering(destination);
+  int steer = float(atof(msg.data));
+
+  if (steer < 0) {
+  	digitalWrite(SDIG1, HIGH);
+  	digitalWrite(SDIG2, HIGH);
+	analogWrite(SAN1, 255);
+        analogWrite(SAN2, 255);
+
+	delay(100);
+  
+} else if (steer > 0) {
+	digitalWrite(SDIG1, LOW);
+	digitalWrite(SDIG2, LOW);
+   analogWrite(SAN1, 255);
+  analogWrite(SAN2, 255);
+delay(100);
+
+  }
+
+	analogWrite(SAN1, 0);
+  analogWrite(SAN2, 0);
+  
 }
 
 
@@ -135,20 +156,33 @@ void steeringControlCb(const std_msgs::String& msg) {
 
 void motorControlCb( const std_msgs::String& msg) {
   WAIT_ON_CALL()
-
-  pwm = atoi(msg.data);
   
-  if (pwm < 0) { 
-    digitalWrite(MDIG1, HIGH);
-    digitalWrite(MDIG2, HIGH);
-  } else if (pwm > 0) { 
-    digitalWrite(MDIG1, LOW);
-    digitalWrite(MDIG2, LOW);
+  static int pwm = 0;  
+ 
+  int currentPwm = atoi(msg.data);
+  //currentPwm = abs(currentPwm);
+    
+  int currentMillis = millis();
+  if ((currentPwm * pwm) < 0) {
+     while ((currentMillis - startMillis) < 5000) { currentMillis = millis(); }
+     startMillis = currentMillis;
   }
 
-  pwm = abs(pwm);
-  analogWrite(MAN1, pwm);
-  analogWrite(MAN2, pwm);
+  if (currentPwm > 0) { 
+     analogWrite(MAN1, 0);
+     analogWrite(MAN2, abs(currentPwm));
+  } else if (currentPwm == 0) {
+    digitalWrite(MAN1, 0);
+    digitalWrite(MAN2, 0);
+  } else {
+     analogWrite(MAN1, abs(currentPwm) * 1.5); 	
+     analogWrite(MAN2, 0);
+  } 
+  
+  pwm = currentPwm;
+
+  //digitalWrite(MDIG1, LOW);
+  //digitalWrite(MDIG2, LOW);
 }
 
 ros::Subscriber<std_msgs::String> motorSubscriber("motor_control", &motorControlCb );
@@ -160,10 +194,8 @@ void setup() {
   pinMode(SAN1, OUTPUT); // Set Arduino pin 5 (AN1) as output.
   pinMode(SAN2, OUTPUT); // Set Arduino pin 6 (AN2) as output.
   
-  pinMode(MDIG1, OUTPUT); // Set Arduino pin 4 (DIG1) as output.
-  pinMode(MDIG2, OUTPUT); // Set Arduino pin 7 (DIG2) as output.
-  pinMode(MAN1, OUTPUT); // Set Arduino pin 5 (AN1) as output.
-  pinMode(MAN2, OUTPUT); // Set Arduino pin 6 (AN2) as output.  
+  pinMode(3, OUTPUT); // Set Arduino pin 4 (DIG1) as output.
+  pinMode(5, OUTPUT); // Set Arduino pin 7 (DIG2) as output.
   
   nh.initNode();
 
@@ -173,6 +205,11 @@ void setup() {
   nh.subscribe(motorSubscriber);
   nh.subscribe(steeringSubscriber);
   pwm  = 0;
+
+  digitalWrite(3, LOW);
+  digitalWrite(5, LOW);
+
+  startMillis = millis();
 }
 
 void loop() {  
@@ -181,6 +218,7 @@ void loop() {
   delay(10);
   pwm = 0;
 }
+
 
 
 
