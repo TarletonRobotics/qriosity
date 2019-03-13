@@ -17,3 +17,8 @@ cvlc v4l2:///dev/video1:chroma=h264:width=800:height=600 --sout#standard{access=
 ### Rover control Software
 ---
 You should be able to access the rover's control software from the following web address http://192.168.1.23:500/gui
+
+### Rover game example
+---
+The gamepad.js file in tests needs the index.html page from this repo:
+https://github.com/luser/gamepadtest
