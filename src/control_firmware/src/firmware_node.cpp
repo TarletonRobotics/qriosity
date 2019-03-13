@@ -153,36 +153,49 @@ delay(100);
 
 ////=================== END STEERING CODE ============================= ///////
 
+void setDriveSpeed(int pwm){
+  if(pwm > 0){
+    //TODO go forward
+    digitalWrite(MAN1, 1);
+    digitalWrite(MAN2, 0);
+  }else{
+    //TODO go backward
+    digitalWrite(MAN1, 0);
+    digitalWrite(MAN2, 1);
+  }
+}
+
+int currentPwm = 0;
+int startTime = 0;
+int currentTime = 0;
+bool flippedDirection = false;
 
 void motorControlCb( const std_msgs::String& msg) {
-  WAIT_ON_CALL()
-  
-  static int pwm = 0;  
- 
-  int currentPwm = atoi(msg.data);
-  //currentPwm = abs(currentPwm);
-    
-  int currentMillis = millis();
-  if ((currentPwm * pwm) < 0) {
-     while ((currentMillis - startMillis) < 5000) { currentMillis = millis(); }
-     startMillis = currentMillis;
-  }
+  int targetPwm = atoi(msg.data);
 
-  if (currentPwm > 0) { 
-     analogWrite(MAN1, 0);
-     analogWrite(MAN2, abs(currentPwm));
-  } else if (currentPwm == 0) {
+  if(targetPwm == 0){
     digitalWrite(MAN1, 0);
     digitalWrite(MAN2, 0);
-  } else {
-     analogWrite(MAN1, abs(currentPwm) * 1.5); 	
-     analogWrite(MAN2, 0);
-  } 
-  
-  pwm = currentPwm;
+    return;
+  }
 
-  //digitalWrite(MDIG1, LOW);
-  //digitalWrite(MDIG2, LOW);
+  if(!flippedDirection && targetPwm * currentPwm < 0){
+    startTime = millis();
+    flippedDirection = true;
+    digitalWrite(MAN1, 0);
+    digitalWrite(MAN2, 0);
+  }
+
+  currentTime = millis();
+  if(!flippedDirection){ 
+    setDriveSpeed(targetPwm); 
+    currentPwm = targetPwm;
+  }
+  else if(currentTime - startTime > 5000){
+    setDriveSpeed(targetPwm);
+    currentPwm = targetPwm;
+    flippedDirection = false;
+  }
 }
 
 ros::Subscriber<std_msgs::String> motorSubscriber("motor_control", &motorControlCb );
@@ -218,7 +231,6 @@ void loop() {
   delay(10);
   pwm = 0;
 }
-
 
 
 
