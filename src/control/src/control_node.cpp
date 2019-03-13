@@ -40,8 +40,7 @@ public:
     
     ros::Publisher motorControlPublisher;
     ros::Publisher steeringControlPublisher;
-    
-
+    int currentThrottle;
     float valueMapper(const float x, float imin, float imax, float omin, float omax) {
         return (x - imin) * ((omax - omin) / (imax - imin)) + omin; 
     };
@@ -49,9 +48,19 @@ public:
     void joystickSubscriberCb(const sensor_msgs::Joy::ConstPtr& msg) {  
         WAIT_ON_CALL()
         
-        const long throttle = valueMapper(
-            msg->axes[1], -1.0, 1.0, pwmMin, pwmMax 
-        );
+        //long throttle = valueMapper(
+        //    msg->axes[5], -1.0, 1.0, pwmMin, pwmMax 
+        //);
+
+	const unsigned pwm = 20;
+	const long  throttle = msg->axes[5] * pwm;
+
+	//if ((throttle < 10) && (throttle > -10)) {
+	//	throttle = 0;
+	//}
+	//if (this->currentThrottle * throttle) < 0) {
+	
+	//}
 
         const float steering = valueMapper(
             msg->axes[2], -1.0f, 1.0f, -1, 1
@@ -63,6 +72,7 @@ public:
     }
 
     MotionController(ros::NodeHandle& handle) {
+	this->currentThrottle = 0;
         // subscriber for joystic topics.
         joystickSubscriber = 
             handle.subscribe("joy", 10, &MotionController::joystickSubscriberCb, this);
