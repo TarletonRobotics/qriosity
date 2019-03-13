@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>command</name>
+  <name>webserver</name>
   <version>0.0.0</version>
   <description>The command_server package</description>
 
