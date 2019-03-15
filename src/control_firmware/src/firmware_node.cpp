@@ -23,10 +23,16 @@ int currentPosition = 0;
 int precision = 5;
 int startMillis = 0;
 
-const int SDIG1 = 8; // Arduino pin 4 is connected to MDDS10 pin DIG1
-const int SDIG2 = 4; // Arduino pin 7 is connected to MDDS10 pin DIG2.
-const int SAN1 = 6; // Arduino pin 5 is connected to MDDS10 pin AN1.
-const int SAN2 = 2; // Arduino pin 6 is connected to MDDS10 pin AN2.
+#define STRAIGHT 0
+#define LEFT 1
+#define RIGHT -1 
+
+int orientation;
+
+const int SDIG1 = 34; // Arduino pin 4 is connected to MDDS10 pin DIG1
+const int SDIG2 = 12; // Arduino pin 7 is connected to MDDS10 pin DIG2.
+const int SAN1 = 32; // Arduino pin 5 is connected to MDDS10 pin AN1.
+const int SAN2 = 10; // Arduino pin 6 is connected to MDDS10 pin AN2.
 
 const int MAN1 = 3; // Arduino pin 4 is connected to MDDS10 pin DIG1.
 const int MAN2 = 5; // Arduino pin 7 is connected to MDDS10 pin DIG2.
@@ -43,111 +49,139 @@ T mapValue(const T x, T imin, T imax, T omin, T omax) {
 
 ////=================== STEERING CODE ============================= ///////
 
-void stopActuator()
-{
-  analogWrite(SAN1,0);
-  analogWrite(SAN2,0);
-}//end stopActuator
+// void stopActuator(int id )
+// {
+//   analogWrite(id,0);
+// //  analogWrite(SAN2,0);
+// }//end stopActuator
 
-void pushActuator()
-{ 
+// void pushActuator(int id)
+// { 
+//   analogWrite(id, 255);
+//   //analogWrite(SAN2, 255);
+// }//end pushActuator
+
+// void pullActuator(int id)
+// {
+//   analogWrite(id,255);
+//   //analogWrite(SAN2,255);
+// }//end pullActuator
+
+// void pushActuatorUntilStop(int destination)
+// {
+//   digitalWrite(SDIG1, HIGH);
+//   digitalWrite(SDIG2, LOW);
+  
+//   int temp = analogRead(A0); 
+//   difference = destination - temp;//check difference to see if continue moving, or stop
+
+//   while (difference > precision || difference < -precision)
+//   {
+//     destination = analogRead(A0);
+//     temp = analogRead(A0); //continue checking difference
+//  difference = destination - temp;
+//     pushActuator();
+//   }//end while
+  
+//   delay(75);
+//   stopActuator();
+// }//end pushActuatorUntilStop
+
+// void pullActuatorUntilStop(int destination)
+// {
+//   digitalWrite(SDIG1, LOW);
+//   digitalWrite(SDIG2, HIGH);
+  
+//   int temp = analogRead(A10); //check difference to see if continue moving, or stop
+//   difference = destination - temp;
+
+//   while (difference > precision || difference < -precision)
+//   {
+//     destination = analogRead(A0);
+//     temp = analogRead(A0); //continue checking difference
+//     difference = destination - temp;
+//     pullActuator();
+//   }//end while
+  
+//   delay(75);
+//   stopActuator();
+// }//end pullActuatorUntilStop
+
+inline void setLeft() {
+  digitalWrite(SDIG1, HIGH) ;
+  digitalWrite(SDIG2, LOW) ;
+    
+}
+
+inline void setRight() {
+  digitalWrite(SDIG1, LOW) ;
+  digitalWrite(SDIG2, HIGH) ;
+}
+
+void continousSteering(int target) {
+  int difference1, difference2;
+  int target1, target2;
+
+  if (target != orientation) {
+    if (target == STRAIGHT) {
+      target1 = 495;
+      target2 = 525;
+      if (orientation == LEFT) {
+        setRight();
+      } else {
+        setLeft();
+      }
+    } else {
+      if (target == LEFT) {
+        target1 = 660;
+        target2 = 305;
+        setLeft();
+      } else if (target == RIGHT) {
+        target1 = 290;
+        target2 = 690;
+        setRight();
+      } 
+    }
+  }
+
   analogWrite(SAN1, 255);
   analogWrite(SAN2, 255);
-}//end pushActuator
+   
+ do {  
+  difference1 = target1 - analogRead(A10);
+  difference2 = target2 - analogRead(A12);
 
-void pullActuator()
-{
-  analogWrite(SAN1,255);
-  analogWrite(SAN2,255);
-}//end pullActuator
+  if (abs(difference1) < precision) analogWrite(SAN1, 0);
+  if (abs(difference2) < precision)analogWrite(SAN2, 0);
 
-void pushActuatorUntilStop(int destination)
-{
-  digitalWrite(SDIG1, HIGH);
-  digitalWrite(SDIG2, LOW);
-  
-  int temp = analogRead(A0); 
-  difference = destination - temp;//check difference to see if continue moving, or stop
+ } while (abs(difference1) > precision || abs(difference2) > precision);
 
-  while (difference > precision || difference < -precision)
-  {
-    destination = analogRead(A0);
-    temp = analogRead(A0); //continue checking difference
-    difference = destination - temp;
-    pushActuator();
-  }//end while
-  
-  delay(75);
-  stopActuator();
-}//end pushActuatorUntilStop
-
-void pullActuatorUntilStop(int destination)
-{
-  digitalWrite(SDIG1, LOW);
-  digitalWrite(SDIG2, HIGH);
-  
-  int temp = analogRead(A0); //check difference to see if continue moving, or stop
-  difference = destination - temp;
-
-  while (difference > precision || difference < -precision)
-  {
-    destination = analogRead(A0);
-    temp = analogRead(A0); //continue checking difference
-    difference = destination - temp;
-    pullActuator();
-  }//end while
-  
-  delay(75);
-  stopActuator();
-}//end pullActuatorUntilStop
-
-void continousSteering(int destination) {
-  //destination = 500; 
-  currentPosition = (analogRead(A0) + analogRead(A2)) / 2.0;//check where you are
-  
-  //Serial.print("Position    ");
-  
-  //Serial.println(analogRead(A0));
-  
-  difference = destination - currentPosition;//find out how far you are from the destination
-  
-  if (currentPosition > destination) { 
-    pullActuatorUntilStop(destination);
-    //Serial.println("pulling actuator");
-  }// choose what action to take
-  else if (currentPosition < destination) { 
-    pushActuatorUntilStop(destination);
-    //Serial.println("pushing actuator");
-  }
-  else if (difference < precision && difference > -precision) stopActuator();
+ orientation = target;
 }
 
 
 void steeringControlCb(const std_msgs::String& msg) {
-  //destination = mapValue(float(atof(msg.data)), -1.0f, 1.0f, (400.0f+330.0f)/2.0f, (630.0f+700.0f)/2.0f);
-  //continousSteering(destination);
-  int steer = float(atof(msg.data));
+  int direction = atoi(msg.data);
 
-  if (steer < 0) {
-  	digitalWrite(SDIG1, HIGH);
-  	digitalWrite(SDIG2, HIGH);
-	analogWrite(SAN1, 255);
-        analogWrite(SAN2, 255);
+  continousSteering(direction);
+ //  int steer = float(atof(msg.data));
 
-	delay(100);
-  
-} else if (steer > 0) {
-	digitalWrite(SDIG1, LOW);
-	digitalWrite(SDIG2, LOW);
-   analogWrite(SAN1, 255);
-  analogWrite(SAN2, 255);
-delay(100);
+ //  if (steer < 0) {
+ //  	digitalWrite(SDIG1, HIGH);
+ //  	digitalWrite(SDIG2, HIGH);
+	//   analogWrite(SAN1, 255);
+ //    analogWrite(SAN2, 255);
+	//   delay(100);
+ //  } else if (steer > 0) {
+ //  	digitalWrite(SDIG1, LOW);
+ //  	digitalWrite(SDIG2, LOW);
+ //    analogWrite(SAN1, 255);
+ //    analogWrite(SAN2, 255);
+ //    delay(100);
+ //  }
 
-  }
-
-	analogWrite(SAN1, 0);
-  analogWrite(SAN2, 0);
-  
+	// analogWrite(SAN1, 0);
+ //  analogWrite(SAN2, 0);
 }
 
 
@@ -223,6 +257,8 @@ void setup() {
   digitalWrite(5, LOW);
 
   startMillis = millis();
+
+  orientation = 0;
 }
 
 void loop() {  
