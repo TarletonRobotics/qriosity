@@ -1,4 +1,5 @@
 #!/bin/bash
+catkin_make -DCATKIN_BLACKLIST_PACKAGES="webserver"
 
 success () {
 	tput setaf 2
@@ -42,7 +43,7 @@ done;
 
 success "Building haywyre control node"
 
-catkin_make -DCATKIN_BLACKLIST_PACKAGES="haywyre_vision"
+catkin_make -DCATKIN_BLACKLIST_PACKAGES="webserver;haywyre_vision"
 #catkin_make --pkg haywyre_control
 # catkin_make --pkg haywyre_vision
 
