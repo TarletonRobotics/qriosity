@@ -1,3 +1,7 @@
+import gps
+from pyfirmata import ArduinoMega, util
+
+
 class Rover(object):
     """Create a rover object based on a pin map
     """
@@ -12,6 +16,8 @@ class Rover(object):
         self.startTime = 0;
         self.currentTime = 0;
         self.flippedDirection = False;
+        self.board = ArduinoMega(self.port)
+        self.gps = GpsDevice(self)
 
     def setDriveSpeed(self, speed):
         if speed > 0:
@@ -21,7 +27,10 @@ class Rover(object):
             self.MAN1.write(0.0);
             self.MAN2.write(1.0);
 
-    
+    def readBattery(self):
+        rawVoltage = self.BAT.read()
+        # convert voltage to percentage
+        self.batPerc = rawVoltage / 1023.0
 
     def drive(self, speed):
         if speed == 0:
@@ -47,7 +56,6 @@ class Rover(object):
 
         
     def set_port_pins(self):
-        board = ArduinoMega(self.port)
         """
         the firmata pin methods take a string
         """
@@ -58,5 +66,8 @@ class Rover(object):
         
         self.MAN1 = board.get_pin("d:3:p")
         self.MAN2 = board.get_pin("d:5:p")
+
+        # battery read
+        self.BAT = board.get_pin("a:97:i")
 
         #self.pause = board.pass_time(5)
