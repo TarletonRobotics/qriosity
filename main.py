@@ -21,7 +21,7 @@ port = '/dev/ttyACM0' if platform.system() == "Linux" else '/dev/cu.usbmodem1411
 
 rover = Rover(port, 3,5) 
 
-rover.set_port_pins()
+#rover.set_port_pins()
 
 
 def processInput(events):
@@ -44,6 +44,8 @@ def processInput(events):
             labrat.turn(0)
 
 if __name__ == "__main__":
+    rover = Rover(port, 3,5) 
+    rover.set_port_pins()
     while True:
 #        print("battery: ", rover.readBattery())
         events = inputs.get_gamepad()
