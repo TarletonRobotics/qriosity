@@ -1,0 +1,26 @@
+{
+  "name": "qriosity",
+  "version": "1.0.0",
+  "description": "Qriosity code for rover",
+  "main": "main.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "start": "node main.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TarletonRobotics/qriosity.git"
+  },
+  "author": "Michael Osei, Chris Dyrssen, Steve Merwin, Biswas Ghimire, Tu Nyugen",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/TarletonRobotics/qriosity/issues"
+  },
+  "homepage": "https://github.com/TarletonRobotics/qriosity#readme",
+  "dependencies": {
+    "firmata": "^2.0.0"
+  }
+}
