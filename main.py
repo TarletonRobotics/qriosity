@@ -14,7 +14,6 @@ import platform
 
 import inputs
 import time
-import pygame
 
 from rover import Rover
 
@@ -30,18 +29,39 @@ def processInput(events):
         print ('event.code',event.code, '\tevent.state',event.state)
         """
         directional pad up is forward, let off direction pad is stop
-       
         """
         if event.code == 'ABS_Y' and event.state == 0:
             rover.drive(20)
         if event.code == 'ABS_Y' and event.state == 255:
             rover.drive(-20)
-        if event.code == 'ABS_Y' and event.state == 127:    
+        if event.code == 'ABS_Y' and event.state == 127:
             labrat.drive(0)
-        
+        if event.code == 'ABS_X' and event.state == 0:
+            labrat.turn(-1)
+        if event.code == 'ABS_X' and event.state == 255:
+            labrat.turn(1)
+        if event.code == 'ABS_X' and event.state == 127:
+            labrat.turn(0)
 
 if __name__ == "__main__":
     while True:
-        print("battery: ", rover.readBattery())
+#        print("battery: ", rover.readBattery())
         events = inputs.get_gamepad()
-        processInput(events)
+        # processInput(events)
+        for event in events:
+            print ('event.code',event.code, '\tevent.state',event.state)
+            """
+            directional pad up is forward, let off direction pad is stop
+            """
+            if event.code == 'ABS_Y' and event.state == 0:
+                rover.drive(20)
+            if event.code == 'ABS_Y' and event.state == 255:
+                rover.drive(-20)
+            if event.code == 'ABS_Y' and event.state == 127:
+                rover.drive(0)
+            if event.code == 'ABS_X' and event.state == 0:
+                rover.turn(-1)
+            if event.code == 'ABS_X' and event.state == 255:
+                rover.turn(1)
+            if event.code == 'ABS_X' and event.state == 127:
+                rover.turn(0)
