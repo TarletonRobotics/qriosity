@@ -71,3 +71,4 @@ class Rover(object):
         self.BAT = board.get_pin("a:97:i")
 
         #self.pause = board.pass_time(5)
+        

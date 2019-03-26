@@ -16,6 +16,8 @@ function main() {
 
             const HW_SERIAL1 = board.SERIAL_PORT_IDs.HW_SERIAL1;
 
+            const SW_SERIAL0 = board.SERIAL_PORT_IDs.SW_SERIAL0;
+
             board.serialConfig({
               portId: HW_SERIAL1,
               baud: 9600
@@ -38,7 +40,15 @@ function main() {
                 }
               }
             }
-
+            // 
+            console.log('sending string: How are you' );
+            var bytes = new Buffer("How are you.", 'utf8');
+            var data = [];
+            
+            data.push(board.STRING_DATA);
+            board.sendString("Hello\0");
+            data.push(board.END_SYSEX);
+            
           });
         });
 
