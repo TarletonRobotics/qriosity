@@ -57,13 +57,20 @@ if __name__ == "__main__":
             """
             if event.code == 'ABS_Y' and event.state == 0:
                 rover.drive(20)
+                #print('Move forward')
             if event.code == 'ABS_Y' and event.state == 255:
                 rover.drive(-20)
+                #print('Move backward')    
             if event.code == 'ABS_Y' and event.state == 127:
                 rover.drive(0)
+                #print('Move stop')    
             if event.code == 'ABS_X' and event.state == 0:
                 rover.turn(-1)
+                #print('Move left')    
             if event.code == 'ABS_X' and event.state == 255:
                 rover.turn(1)
+                #print('Move right')    
             if event.code == 'ABS_X' and event.state == 127:
                 rover.turn(0)
+                #print('Move 0')
+            

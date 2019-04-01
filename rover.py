@@ -27,11 +27,11 @@ class Rover(object):
 
     def setDriveSpeed(self, speed):
         if speed > 0:
-            self.MAN1.write(1.0);
+            self.MAN1.write(.60);
             self.MAN2.write(0.0);
         else:
             self.MAN1.write(0.0);
-            self.MAN2.write(1.0);
+            self.MAN2.write(.75);
 
     # def readBattery(self):
     #     rawVoltage = self.BAT.read()
@@ -85,12 +85,14 @@ class Rover(object):
         # self.pinForward = board.get_pin(forward)
         # self.pinReverse = board.get_pin(reverse)
 
-        self.MAN1 = self.board.get_pin("d:3:p")
-        self.MAN2 = self.board.get_pin("d:5:p")
-        self.SAN1 = self.board.get_pin("d:6:p")
-        self.SAN2 = self.board.get_pin("d:2:p")
-        self.SDIG1 = self.board.get_pin("d:8:o")
-        self.SDIG2 = self.board.get_pin("d:4:o")
+        self.MAN1 = self.board.get_pin("d:4:p")
+        self.MAN2 = self.board.get_pin("d:12:p")
+
+        self.SAN1 = self.board.get_pin("d:7:p")
+        self.SAN2 = self.board.get_pin("d:9:p")
+
+        self.SDIG1 = self.board.get_pin("d:6:o")
+        self.SDIG2 = self.board.get_pin("d:8:o")
 
         # battery read
         #self.BAT = self.board.get_pin("a:97:i")
